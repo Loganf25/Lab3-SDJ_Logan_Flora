@@ -1,8 +1,9 @@
 package src;
 
-public class NFLTeam {
+public class NFLTeamStatsByYear {
     //Details for DetailsPanel
     private final String teamName;
+    private final int year;
     //Actual Data of Team
     //Game Stats (Calculate Win %)
     private final int wins;
@@ -22,9 +23,11 @@ public class NFLTeam {
     private final int rushing_tds;
     private final int penalties;
 
-    public NFLTeam(String teamName, int wins, int losses, int pointsScored, int pointsAllowed,
+    //A very redundant Constructor (Acts as getter as it's coming from a file)
+    public NFLTeamStatsByYear(String teamName, int year, int wins, int losses, int pointsScored, int pointsAllowed,
                    int totalYards, int rushYds, int passYds, int turnovers, int passAtt, int passCmp, int passTd, int rushTd, int penalties) {
         this.teamName = teamName;
+        this.year = year;
         this.wins = wins;
         this.losses = losses;
         this.points_scored = pointsScored;
@@ -42,8 +45,12 @@ public class NFLTeam {
 
     //Getters for Every private variable (Probably used in visuals)
     //No setters as this is data from a file, never to be set by a user, only taken from file.
+    //And Historical, so shouldn't be changed by anyone
     String getTeamName() {
         return teamName;
+    }
+    int getYear() {
+        return year;
     }
     int getWins() {
         return wins;

@@ -32,7 +32,7 @@ public class vizDataBack {
         HashMap<String, ArrayList<NFLTeamStatsByYear>> teamsData = new HashMap<>();
 
         try(FileReader reader = new FileReader(fileName);
-            CSVParser csvParser = new CSVParser(reader,  CSVFormat.Builder.create().setHeader().build())){
+            CSVParser csvParser = new CSVParser(reader,  CSVFormat.Builder.create().setHeader().build());){
 
             //Csv Record is the entire file
             for (CSVRecord csvRecord : csvParser)
@@ -42,8 +42,8 @@ public class vizDataBack {
                 int year = Integer.parseInt(csvRecord.get("year"));
                 int wins = Integer.parseInt(csvRecord.get("wins"));
                 int losses = Integer.parseInt(csvRecord.get("losses"));
-                int pointsScored = Integer.parseInt(csvRecord.get("points_scored"));
-                int pointsAllowed = Integer.parseInt(csvRecord.get("points_allowed"));
+                int pointsScored = Integer.parseInt(csvRecord.get("points"));
+                int pointsAllowed = Integer.parseInt(csvRecord.get("points_opp"));
                 int totalYards = Integer.parseInt(csvRecord.get("total_yards"));
                 int rushYds = Integer.parseInt(csvRecord.get("rush_yds"));
                 int passYds = Integer.parseInt(csvRecord.get("pass_yds"));
@@ -104,8 +104,8 @@ public class vizDataBack {
     public HashMap<String, ArrayList<NFLTeamStatsByYear>> filterByYear (int year) {
         return NFLData.entrySet().stream().map(entry -> {
             //Creates a new arrayList that only contains the given year
-            ArrayList<NFLTeamStatsByYear> filteredSeasons = (ArrayList<NFLTeamStatsByYear>) entry.getValue().stream()
-                    .filter(team -> team.getYear() == year).toList();
+            ArrayList<NFLTeamStatsByYear> filteredSeasons = new ArrayList<>(entry.getValue().stream()
+                    .filter(team -> team.getYear() == year).toList());
             //Returns all teams with their filtered ArrayLists of seasons
             return Map.entry(entry.getKey(), filteredSeasons);
         }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,

@@ -2,14 +2,14 @@ package src;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import static src.vizDataBack.*;
 
 public class vizDataBackTest {
 
     public static void main(String[] args) {
-        vizDataBack dataBack = new vizDataBack("resources/NFLteam_stats_2023.csv");
 
         // Test getTeamsFromCSV
-        HashMap<String, ArrayList<NFLTeamStatsByYear>> nflData = dataBack.getTeamsFromCSV();
+        HashMap<String, ArrayList<NFLTeamStatsByYear>> nflData = vizDataBack.getTeamsFromCSV("resources/NFLteam_stats_2023.csv");
         if (nflData.isEmpty()) {
             System.out.println("Error: HashMap should not be empty");
         } else if (!nflData.containsKey("Arizona Cardinals")) {
@@ -19,7 +19,7 @@ public class vizDataBackTest {
         }
 
         // Test averagePointsScored
-        double avgPoints = dataBack.averagePointsScored();
+        double avgPoints = vizDataBack.averagePointsScored(nflData);
         if (avgPoints <= 0) {
             System.out.println("Error: Average points should be greater than 0");
         } else {
@@ -27,7 +27,7 @@ public class vizDataBackTest {
         }
 
         // Test filterByYear
-        HashMap<String, ArrayList<NFLTeamStatsByYear>> filteredDataByYear = dataBack.filterByYear(2023);
+        HashMap<String, ArrayList<NFLTeamStatsByYear>> filteredDataByYear = vizDataBack.filterByYear(nflData, 2023);
         if (filteredDataByYear.get("Arizona Cardinals").stream().anyMatch(team -> team.getYear() != 2023)) {
             System.out.println("Error: All years for Arizona Cardinals should be 2023");
         } else {
@@ -35,7 +35,7 @@ public class vizDataBackTest {
         }
 
         // Test filterByTeam
-        HashMap<String, ArrayList<NFLTeamStatsByYear>> filteredDataByTeam = dataBack.filterByTeam("Arizona Cardinals");
+        HashMap<String, ArrayList<NFLTeamStatsByYear>> filteredDataByTeam = vizDataBack.filterByTeam(nflData,"Arizona Cardinals");
         if (!filteredDataByTeam.containsKey("Arizona Cardinals")) {
             System.out.println("Error: Should contain 'Arizona Cardinals'");
         } else if (filteredDataByTeam.size() != 1) {
@@ -45,12 +45,12 @@ public class vizDataBackTest {
         }
 
         // Test sortByNameAsc
-        HashMap<String, ArrayList<NFLTeamStatsByYear>> sortedData = dataBack.sortByNameAsc();
+        HashMap<String, ArrayList<NFLTeamStatsByYear>> sortedData = sortByNameAsc(nflData);
         // You'll need to manually check if the teams are sorted alphabetically
 
         // Test sortByYearAsc
-        dataBack.sortByYearAsc("Arizona Cardinals");
-        ArrayList<NFLTeamStatsByYear> teamSeasons = dataBack.filterByTeam("Arizona Cardinals").get("Arizona Cardinals");
+        sortByYearAsc(nflData);
+        ArrayList<NFLTeamStatsByYear> teamSeasons = filterByTeam(nflData,"Arizona Cardinals").get("Arizona Cardinals");
         // You'll need to manually check if the years are sorted for Arizona Cardinals
     }
 }

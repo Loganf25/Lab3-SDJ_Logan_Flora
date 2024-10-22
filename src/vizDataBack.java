@@ -13,22 +13,12 @@ import org.apache.commons.csv.CSVRecord;
 
 //The Data Collection side of the Program
 public class vizDataBack {
-    //Initializations
-    private final HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData;
-    private final String fileName;
-
-    //Constructor
-    public vizDataBack(String fileName) {
-        this.fileName = fileName;
-        this.NFLData = getTeamsFromCSV();
-    }
-
     //This method is the CVSFile Reader responsible for populating the HashMap
     //HashMap used as many years of data has been collected
     //HashMap stores the name of the team as a key, and an ArrayList as the value
     //The arrayList will hold NFLTeamStatsByYear Objects for each season of the 20 season for a given team
     //NFLTeamStats Object holds the actual stats of that year for a given team
-    public HashMap<String, ArrayList<NFLTeamStatsByYear>> getTeamsFromCSV() {
+    public static HashMap<String, ArrayList<NFLTeamStatsByYear>> getTeamsFromCSV(String fileName) {
         HashMap<String, ArrayList<NFLTeamStatsByYear>> teamsData = new HashMap<>();
 
         try(FileReader reader = new FileReader(fileName);
@@ -74,7 +64,7 @@ public class vizDataBack {
     //OFC being meaningless if 1 team-1 year (As its averages)
 
     //Finds average points scored of the data set (One of the above scenarios)
-    public double averagePointsScored (){
+    public static double averagePointsScored(HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData){
         //Had to find a new variable type with an averaging function
         //As the data size can vary based on applied filters
         //Java provides a stats int to do so!!
@@ -84,14 +74,14 @@ public class vizDataBack {
         return stats.getAverage();
     }
     //Almost Identical To the One above, just checking totalYards instead
-    public double averageTotalYards (){
+    public static double averageTotalYards (HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData){
         IntSummaryStatistics stats = NFLData.values().stream()
                 .flatMapToInt(teams -> teams.stream().mapToInt(NFLTeamStatsByYear::getTotalYards))
                 .summaryStatistics();
         return stats.getAverage();
     }
     //Identical except looking for turnovers
-    public double averageTurnovers (){
+    public static double averageTurnovers (HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData){
         IntSummaryStatistics stats = NFLData.values().stream()
                 .flatMapToInt(teams -> teams.stream().mapToInt(NFLTeamStatsByYear::getTurnOvers))
                 .summaryStatistics();
@@ -101,11 +91,12 @@ public class vizDataBack {
 
     //Filterers (Utilized Streams Here)
     //Filter by Year Method (Will only add years chosen)
-    public HashMap<String, ArrayList<NFLTeamStatsByYear>> filterByYear (int year) {
+    public static HashMap<String, ArrayList<NFLTeamStatsByYear>> filterByYear(HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData, int year) {
         return NFLData.entrySet().stream().map(entry -> {
             //Creates a new arrayList that only contains the given year
-            ArrayList<NFLTeamStatsByYear> filteredSeasons = new ArrayList<>(entry.getValue().stream()
-                    .filter(team -> team.getYear() == year).toList());
+            ArrayList<NFLTeamStatsByYear> filteredSeasons = entry.getValue().stream()
+                    .filter(team -> team.getYear() == year)
+                    .collect(Collectors.toCollection(ArrayList::new));
             //Returns all teams with their filtered ArrayLists of seasons
             return Map.entry(entry.getKey(), filteredSeasons);
         }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
@@ -113,7 +104,7 @@ public class vizDataBack {
     }
 
     //Filter by Team Method (Will only add teams chosen)
-    public HashMap<String, ArrayList<NFLTeamStatsByYear>> filterByTeam(String teamName) {
+    public static HashMap<String, ArrayList<NFLTeamStatsByYear>> filterByTeam(HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData, String teamName) {
         //As the name of the team is the key of the hashmap, it is much simpler than year
         return NFLData.entrySet().stream().filter(entry -> entry.getKey().equals(teamName))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
@@ -121,7 +112,7 @@ public class vizDataBack {
     }
 
     //Filter by Wins Method (User Inputs Min Wins to be added)
-    public HashMap<String, ArrayList<NFLTeamStatsByYear>> filterByWins (int minWins) {
+    public static HashMap<String, ArrayList<NFLTeamStatsByYear>> filterByWins (HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData, int minWins) {
         return NFLData.entrySet().stream().map(entry -> {
             //Creates a new arrayList that only contains the given year
             ArrayList<NFLTeamStatsByYear> filteredSeasons = (ArrayList<NFLTeamStatsByYear>) entry.getValue().stream()
@@ -133,7 +124,7 @@ public class vizDataBack {
     }
 
     //Filter by Losses Method (User inputs min Losses to be added)
-    public HashMap<String, ArrayList<NFLTeamStatsByYear>> filterByLosses (int minLosses) {
+    public static HashMap<String, ArrayList<NFLTeamStatsByYear>> filterByLosses (HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData, int minLosses) {
         return NFLData.entrySet().stream().map(entry -> {
             //Creates a new arrayList that only contains the given year
             ArrayList<NFLTeamStatsByYear> filteredSeasons = (ArrayList<NFLTeamStatsByYear>) entry.getValue().stream()
@@ -147,7 +138,7 @@ public class vizDataBack {
     //Sorters (Name and Year (plus Reversed))
     //A-Z
     //Returns a newly sorted Hashmap
-    public HashMap<String, ArrayList<NFLTeamStatsByYear>> sortByNameAsc() {
+    public static HashMap<String, ArrayList<NFLTeamStatsByYear>> sortByNameAsc(HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData) {
         return NFLData.entrySet().stream().sorted(Map.Entry.comparingByKey())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                 (oldValue, newValue) -> oldValue, LinkedHashMap::new));
@@ -155,7 +146,7 @@ public class vizDataBack {
 
     //Z-A
     //Returns a newly sorted Hashmap
-    public HashMap<String, ArrayList<NFLTeamStatsByYear>> sortByNameDec(){
+    public static HashMap<String, ArrayList<NFLTeamStatsByYear>> sortByNameDec(HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData){
         return NFLData.entrySet().stream().sorted(Collections.reverseOrder(Map.Entry.comparingByKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (oldValue, newValue) -> oldValue, LinkedHashMap::new));
@@ -163,14 +154,26 @@ public class vizDataBack {
 
     //2003-2024
     //No return as it sorts the years inside the ArrayList of each team, not dealing with entire Hashmap
-    public void sortByYearAsc(String teamName){
-        NFLData.get(teamName).sort(Comparator.comparingInt(NFLTeamStatsByYear::getYear));
+    public static HashMap<String, ArrayList<NFLTeamStatsByYear>> sortByYearAsc(HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData){
+        List<NFLTeamStatsByYear> allTnYStats = NFLData.values().stream()
+                .flatMap(Collection::stream)
+                .sorted(Comparator.comparing(NFLTeamStatsByYear::getYear))
+                .toList();
+        NFLData = allTnYStats.stream().collect(Collectors.groupingBy(NFLTeamStatsByYear::getTeamName,
+                LinkedHashMap::new, Collectors.toCollection(ArrayList::new)));
+        return NFLData;
     }
 
     //2023-2003
     //To return for same reason
-    public void sortByYearDec(String teamName){
-        NFLData.get(teamName).sort(Collections.reverseOrder(Comparator.comparingInt(NFLTeamStatsByYear::getYear)));
+    public static HashMap<String, ArrayList<NFLTeamStatsByYear>> sortByYearDec(HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData){
+        List<NFLTeamStatsByYear> allTnYStats = NFLData.values().stream()
+                .flatMap(Collection::stream)
+                .sorted(Comparator.comparing(NFLTeamStatsByYear::getYear).reversed())
+                .toList();
+        NFLData = allTnYStats.stream().collect(Collectors.groupingBy(NFLTeamStatsByYear::getTeamName,
+                LinkedHashMap::new, Collectors.toCollection(ArrayList::new)));
+        return NFLData;
     }
 }
 

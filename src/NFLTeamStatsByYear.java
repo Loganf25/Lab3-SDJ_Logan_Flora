@@ -1,6 +1,6 @@
 package src;
 
-public class NFLTeamStatsByYear {
+public class   NFLTeamStatsByYear {
     //Details for DetailsPanel
     private final String teamName;
     private final int year;

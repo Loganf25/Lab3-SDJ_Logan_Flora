@@ -25,6 +25,7 @@ public class TablePanel extends JPanel{
 
     //Constructor
     public TablePanel(DetailsPanel detailsPanel, StatsPanel statsPanel, ChartPanel chartPanel){
+        //Panel Setters as they will be affected
         this.detailsPanel = detailsPanel;
         this.statsPanel = statsPanel;
         this.chartPanel = chartPanel;
@@ -79,12 +80,17 @@ public class TablePanel extends JPanel{
             // Apply filters using vizDataBack methods
             HashMap<String, ArrayList<NFLTeamStatsByYear>> filteredData = new HashMap<>(NFLData);
 
+            //This portion will reset the data stored in filteredData back do the ogNFLData
+            //As the user can go back to all years/teams, which means the map needs to be repopulated
+            //And re-filtered if necessary
             assert selectedTeam != null;
+            //Team Filter Check
             if (!selectedTeam.equals("All Teams")) {
                 filteredData = filterByTeam(filteredData, selectedTeam);
             }
             else
                 filteredData = OGNFLData;
+            //Year Filter Check
             if (selectedYear != null) {
                 filteredData = filterByYear(new HashMap<>(filteredData), selectedYear);
             }
@@ -105,13 +111,13 @@ public class TablePanel extends JPanel{
         displayPanel = new JPanel();
         displayPanel.setLayout(new BoxLayout(displayPanel, BoxLayout.Y_AXIS));
         displayPanel.setBackground(Color.CYAN);
+        //Populate the displayPanel upon create so as not to be empty
         updateDisplay();
 
-        //Turns displayPanel into a scrollable one
+        //Turns displayPanel into a scrollable panel, lots of data
         JScrollPane scrollPane = new JScrollPane(displayPanel);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
-        //Set Layout so that the Scrolling Actually Occurs
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(500, 600));
         //Add to table Panel
@@ -156,6 +162,7 @@ public class TablePanel extends JPanel{
             // For sorting by team name, use the existing logic
             for (Map.Entry<String, ArrayList<NFLTeamStatsByYear>> team : NFLData.entrySet()) {
                 if (!isFiltered(team)) {
+                    //Nested due to ArrayList in Map
                     for (NFLTeamStatsByYear stats : team.getValue()) {
                         addTeamYearPanel(team.getKey(), stats);
                     }
@@ -185,7 +192,7 @@ public class TablePanel extends JPanel{
         int yearIncrement = selectedSort.equals(SORT_OPTIONS[2]) ? 1 : -1;
         int initialYear = selectedSort.equals(SORT_OPTIONS[2]) ? minYear : maxYear;
 
-        // Iterate over the years in the determined order
+        // Iterate over the years
         for (int year = initialYear;
              selectedSort.equals(SORT_OPTIONS[2]) ? year <= maxYear : year >= minYear;
              year += yearIncrement) {
@@ -221,7 +228,7 @@ public class TablePanel extends JPanel{
         //Button that pushes Team-Year Data to Details Panel
         teamYearLabel.add(Box.createHorizontalGlue());
         JButton detailsButton = new JButton("Details");
-        //detailsButton.addActionListener(e -> detailsPanel.updateDetails(stats));
+        detailsButton.addActionListener(e -> detailsPanel.updateDetails(stats));
         teamYearPanel.add(detailsButton);
         teamYearPanel.add(Box.createHorizontalGlue());
 

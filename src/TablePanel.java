@@ -2,9 +2,7 @@ package src;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.util.*;
-import java.util.List;
 import java.util.stream.IntStream;
 
 import static src.vizDataBack.*;
@@ -22,6 +20,8 @@ public class TablePanel extends JPanel{
     private final String[] SORT_OPTIONS = {"Team Name (A-Z)", "Team Name (Z-A)", "Year (2003-2023)", "Year (2023-2003)"};
     private final JComboBox<String> teamFilter;
     private final JComboBox<Integer> yearFilter;
+    private final JTextField winsFilter;
+    private final JTextField lossesFilter;
 
     //Constructor
     public TablePanel(DetailsPanel detailsPanel, StatsPanel statsPanel, ChartPanel chartPanel){
@@ -32,34 +32,20 @@ public class TablePanel extends JPanel{
         NFLData = getTeamsFromCSV("resources/NFLteam_stats_2023.csv");
         //This is needed to reset the data when reverting back from a filter
         //Too deep ;(
-        HashMap<String, ArrayList<NFLTeamStatsByYear>> OGNFLData = NFLData;
         setBackground(Color.BLACK);
 
         //Control Panel to hold filters and sorts
         JPanel controlPanel = new JPanel();
         controlPanel.setPreferredSize(new Dimension(500, 50));
-        Color brilBlue = new Color(62, 95, 138);
-        controlPanel.setBackground(brilBlue);
+        Color brillBlue = new Color(62, 95, 138);
+        controlPanel.setBackground(brillBlue);
 
         //Inside Control Panel
         //Sort Drop Down Menu
         sortDropDown = new JComboBox<>(SORT_OPTIONS);
-        sortDropDown.addActionListener(e -> {
-            //Four Options to Sort List by
-            //Names (A-Z)
-            if (Objects.equals(sortDropDown.getSelectedItem(), SORT_OPTIONS[0]))
-                NFLData = sortByNameAsc(NFLData);
-            //Names (Z-A)
-            if (Objects.equals(sortDropDown.getSelectedItem(), SORT_OPTIONS[1]))
-                NFLData = sortByNameDec(NFLData);
-            //Years (2003-2023)
-            if (Objects.equals(sortDropDown.getSelectedItem(), SORT_OPTIONS[2]))
-                NFLData = sortByYearAsc(NFLData);
-            //Years (2023-2003)
-            if (Objects.equals(sortDropDown.getSelectedItem(), SORT_OPTIONS[3]))
-                NFLData = sortByYearDec(NFLData);
-            updateDisplay();
-        });
+        sortDropDown.insertItemAt(null, 0);
+        sortDropDown.setSelectedIndex(0);
+        sortDropDown.addActionListener(e -> {updateDisplay();});
         controlPanel.add(sortDropDown);
 
         //Drop Down for picking a Team
@@ -67,45 +53,28 @@ public class TablePanel extends JPanel{
         teamFilter = new JComboBox<>(teamNames);
         teamFilter.insertItemAt("All Teams", 0);
         teamFilter.setSelectedIndex(0);
+        teamFilter.addActionListener(e -> updateDisplay());
+        controlPanel.add(teamFilter);
 
         //Drop Down for picking a Year
         Integer[] yearOfStats = IntStream.rangeClosed(2003, 2023).boxed().toArray(Integer[]::new);
         yearFilter = new JComboBox<>(yearOfStats);
         yearFilter.insertItemAt(null, 0);
         yearFilter.setSelectedIndex(0);
-        //Since the user can filter by both at once, the action listener makes sure to see both for either
-        ActionListener filterListener = e -> {
-            String selectedTeam = (String) teamFilter.getSelectedItem();
-            Integer selectedYear =  (Integer) yearFilter.getSelectedItem();
-            // Apply filters using vizDataBack methods
-            HashMap<String, ArrayList<NFLTeamStatsByYear>> filteredData = new HashMap<>(NFLData);
-
-            //This portion will reset the data stored in filteredData back do the ogNFLData
-            //As the user can go back to all years/teams, which means the map needs to be repopulated
-            //And re-filtered if necessary
-            assert selectedTeam != null;
-            //Team Filter Check
-            if (!selectedTeam.equals("All Teams")) {
-                filteredData = filterByTeam(filteredData, selectedTeam);
-            }
-            else
-                filteredData = OGNFLData;
-            //Year Filter Check
-            if (selectedYear != null) {
-                filteredData = filterByYear(new HashMap<>(filteredData), selectedYear);
-            }
-            else
-                filteredData = OGNFLData;
-
-            NFLData = filteredData;
-            updateDisplay();
-        };
-        teamFilter.addActionListener(filterListener);
-        yearFilter.addActionListener(filterListener);
-
-        //Add to control Panel then to Table Panel
-        controlPanel.add(teamFilter);
+        yearFilter.addActionListener(e -> updateDisplay());
         controlPanel.add(yearFilter);
+
+        //TextField for Wins Filter
+        winsFilter = new JTextField(5);
+        winsFilter.addActionListener(e -> updateDisplay());
+        controlPanel.add(new JLabel("Minimum Wins: "));
+        controlPanel.add(winsFilter);
+
+        //TextField for Losses Filter
+        lossesFilter = new JTextField(5);
+        lossesFilter.addActionListener(e -> updateDisplay());
+        controlPanel.add(new JLabel("Minimum Losses: "));
+        controlPanel.add(lossesFilter);
 
         //Display Panel (Actual List)
         displayPanel = new JPanel();
@@ -130,75 +99,113 @@ public class TablePanel extends JPanel{
     private boolean isFiltered(Map.Entry<String, ArrayList<NFLTeamStatsByYear>> team){
         String selectedTeam = (String) teamFilter.getSelectedItem();
         Integer selectedYear = (Integer) yearFilter.getSelectedItem();
+        int minWins = 0;
+        int minLosses = 0;
+        //Gets minWins and minLosses
+        try {
+            minWins = Integer.parseInt(winsFilter.getText());
+        } catch (NumberFormatException ignored) {}
+        try {
+            minLosses = Integer.parseInt(lossesFilter.getText());
+        } catch (NumberFormatException ignored) {}
 
-        String teamName = team.getKey();
-        ArrayList<NFLTeamStatsByYear> statsList = team.getValue();
-
-        assert selectedTeam != null;
-        if (!selectedTeam.equals("All Teams") && !teamName.equals(selectedTeam)) {
-            return true; // Filter by team
-        }
-        if (selectedYear != null) {
-            // Check if any stats for the selected year exist for this team
-            return statsList.stream().noneMatch(stats -> stats.getYear() == selectedYear);
-        }
-
-        return false;
+        return !vizDataBack.filterByTeam(selectedTeam).test(team) ||
+                !vizDataBack.filterByYear(selectedYear).test(team) ||
+                !vizDataBack.filterByWins(minWins).test(team) ||
+                !vizDataBack.filterByLosses(minLosses).test(team);
     }
 
-    private void updateDisplay(){
+    private void updateDisplay() {
+        //Reset entire Panel
         displayPanel.removeAll();
-        //Trying this
-        String selectedSort = (String) sortDropDown.getSelectedItem();
+        //Now that the Data is Filtered to User Specification
 
-        assert selectedSort != null;
-        if (selectedSort.equals(SORT_OPTIONS[2])) { // Year (2003-2023)
-            NFLData = sortByYearAsc(NFLData);
-            displayByYear();
-        } else if (selectedSort.equals(SORT_OPTIONS[3])) { // Year (2023-2003)
-            NFLData = sortByYearDec(NFLData);
-            displayByYear();
-        } else {
-            // For sorting by team name, use the existing logic
-            for (Map.Entry<String, ArrayList<NFLTeamStatsByYear>> team : NFLData.entrySet()) {
-                if (!isFiltered(team)) {
-                    //Nested due to ArrayList in Map
-                    for (NFLTeamStatsByYear stats : team.getValue()) {
-                        addTeamYearPanel(team.getKey(), stats);
-                    }
-                }
+        //Check each team, and its attributes, on possible filters applied to it
+        HashMap<String, ArrayList<NFLTeamStatsByYear>> filteredData = new HashMap<>();
+        //Looks into sorted data and only puts non-filtered items into the new data map
+        for(Map.Entry<String, ArrayList<NFLTeamStatsByYear>> team : NFLData.entrySet()){
+            if (!isFiltered(team))
+                filteredData.put(team.getKey(), team.getValue());
+        }
+
+
+
+
+        //It's time to put the data on the panel in any sorted manner
+        //If not sorted, I scrambled the Data so its better looking on the table
+        HashMap<String, ArrayList<NFLTeamStatsByYear>> sortedData = new HashMap<>(filteredData);
+        String selectedSort = (String) sortDropDown.getSelectedItem();
+        if (selectedSort != null){
+            switch (selectedSort){
+                case "Team Name (A-Z)" -> sortedData = sortByNameAsc(sortedData);
+                case "Team Name (Z-A)" -> sortedData = sortByNameDec(sortedData);
+                case "Year (2003-2023)" -> sortedData = sortByYearAsc(sortedData);
+                case "Year (2023-2003)" -> sortedData = sortByYearDec(sortedData);
             }
         }
+
+        if(selectedSort == null) {
+            System.out.println("After Sort Code in updateDisplay (Before Filter Applied - Using sortedData Hash)");
+        }
+        else{
+            System.out.println("After Sort Code in updateDisplay (After Filter Applied - Using sortedData Hash)");
+        }
+        for(HashMap.Entry<String, ArrayList<NFLTeamStatsByYear>> team : sortedData.entrySet()){
+            System.out.println(team.getKey());
+        }
+        System.out.println(" ");
+
+        //Non filtered teams/seasons are passed to correct method of displaying
+        //Since data can be sorted/filtered or Random, it needs to be checked
+        if (selectedSort == null)
+            displayRandom(sortedData);
+        else
+            displayInOrder(sortedData);
 
         revalidate();
         repaint();
     }
 
-    private void displayByYear() {
-        //Allows for addition of years as seasons are complete
-        //And data is updated
-        int minYear = NFLData.values().stream()
-                .flatMap(Collection::stream)
-                .mapToInt(NFLTeamStatsByYear::getYear)
-                .min().orElse(2003);
-        int maxYear = NFLData.values().stream()
-                .flatMap(Collection::stream)
-                .mapToInt(NFLTeamStatsByYear::getYear)
-                .max().orElse(2023);
-
-        // Determine the year iteration order
+    //Displays Data in its Sorted Way (Which is already sorted in Hash)
+    private void displayInOrder (HashMap<String, ArrayList<NFLTeamStatsByYear>> filteredData){
+        //This Only works for filtered to a team, not a year
         String selectedSort = (String) sortDropDown.getSelectedItem();
-        assert selectedSort != null;
-        int yearIncrement = selectedSort.equals(SORT_OPTIONS[2]) ? 1 : -1;
-        int initialYear = selectedSort.equals(SORT_OPTIONS[2]) ? minYear : maxYear;
 
-        // Iterate over the years
-        for (int year = initialYear;
-             selectedSort.equals(SORT_OPTIONS[2]) ? year <= maxYear : year >= minYear;
-             year += yearIncrement) {
+        if(selectedSort == null) {
+            System.out.println("Beginning of displayInOrder Function (Before Filter Applied - Using filteredData Parameter Hash) ");
+        }
+        else{
+            System.out.println("Beginning of displayInOrder Function (After Filter Applied - Using filteredData Parameter Hash)");
+        }
+        for(HashMap.Entry<String, ArrayList<NFLTeamStatsByYear>> team : filteredData.entrySet()){
+            System.out.println(team.getKey());
+        }
+        System.out.println(" ");
+        //Year-Based Sorting (Needs to look into ArrayList before teams for each team)
+        //Which contradicts itself but possible
+        if (selectedSort != null && (selectedSort.equals(SORT_OPTIONS[2]) || selectedSort.equals(SORT_OPTIONS[3]))) {
+            //Allows for addition of years as seasons are complete
+            //And data is updated
+            int minYear = filteredData.values().stream()
+                    .flatMap(Collection::stream)
+                    .mapToInt(NFLTeamStatsByYear::getYear)
+                    .min().orElse(2003);
+            int maxYear = filteredData.values().stream()
+                    .flatMap(Collection::stream)
+                    .mapToInt(NFLTeamStatsByYear::getYear)
+                    .max().orElse(2023);
 
-            for (Map.Entry<String, ArrayList<NFLTeamStatsByYear>> team : NFLData.entrySet()) {
-                if (!isFiltered(team)) {
+            //A Flag that decides if the year sort is ascend or descend
+            //1 or True causes ascending order
+            //-1 of False causes descending order
+            int yearIncrement = selectedSort.equals(SORT_OPTIONS[2]) ? 1 : -1;
+
+            //Sort Through by getting one year of records for all team before going to next
+            //Meaning it goes into each team's hashmap 20 different times
+            for (int year = selectedSort.equals(SORT_OPTIONS[2]) ? minYear : maxYear;
+                 selectedSort.equals(SORT_OPTIONS[2]) ? year <= maxYear : year >= minYear;
+                 year += yearIncrement) {
+                for (Map.Entry<String, ArrayList<NFLTeamStatsByYear>> team : filteredData.entrySet()) {
                     for (NFLTeamStatsByYear stats : team.getValue()) {
                         if (stats.getYear() == year) {
                             addTeamYearPanel(team.getKey(), stats);
@@ -206,7 +213,54 @@ public class TablePanel extends JPanel{
                     }
                 }
             }
+            //Team Sort
+        } else {
+            if(selectedSort == null) {
+                System.out.println("Beginning of Else statement in displayInOrder Method (Before Filter Applied - using filteredData Parameter Hash) ");
+            }
+            else{
+                System.out.println("Beginning of Else statement in displayInOrder Method (After Filter Applied - using filteredData Parameter Hash)");
+            }
+            for(HashMap.Entry<String, ArrayList<NFLTeamStatsByYear>> team : filteredData.entrySet()){
+                System.out.println(team.getKey());
+            }
+            System.out.println(" ");
+
+            for (Map.Entry<String, ArrayList<NFLTeamStatsByYear>> team : filteredData.entrySet()) {
+                addTeamYearPanel(team.getKey(), team.getValue().getFirst());
+            }
         }
+    }
+
+    //Extra Method I implemented to get code to be displayed random
+    //If it is not wanting to be sorted by user (Like Initial Start Up)
+
+    private void displayRandom (HashMap<String, ArrayList<NFLTeamStatsByYear>> filteredData){
+        ArrayList<HashMap<String, NFLTeamStatsByYear>> TeamYearList = new ArrayList<>();
+
+        //Iterate and get everything from OG HashMap
+        for(Map.Entry<String, ArrayList<NFLTeamStatsByYear>> team : filteredData.entrySet()){
+            String teamName = team.getKey();
+            ArrayList<NFLTeamStatsByYear> TeamYearStats = team.getValue();
+
+            //New Hashmap that only holds 1 year of records
+            for(NFLTeamStatsByYear stats : TeamYearStats){
+                HashMap<String, NFLTeamStatsByYear> tempMap = new HashMap<>();
+                tempMap.put(teamName, stats);
+                TeamYearList.add(tempMap);
+            }
+        }
+
+        //Shuffle This list to get that shuffled display
+        Collections.shuffle(TeamYearList);
+
+        //Iterate and print new shuffled list to display
+        for(HashMap<String, NFLTeamStatsByYear> map : TeamYearList) {
+            for (Map.Entry<String, NFLTeamStatsByYear> team : map.entrySet()) {
+                addTeamYearPanel(team.getKey(), team.getValue());
+            }
+        }
+
     }
 
     // Creates and add the teamYearPanel

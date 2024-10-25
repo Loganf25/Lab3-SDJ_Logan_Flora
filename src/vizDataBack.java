@@ -3,6 +3,7 @@ package src;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 //If these imports do NOT work
@@ -91,48 +92,24 @@ public class vizDataBack {
 
     //Filterers (Utilized Streams Here)
     //Filter by Year Method (Will only add years chosen)
-    public static HashMap<String, ArrayList<NFLTeamStatsByYear>> filterByYear(HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData, int year) {
-        return NFLData.entrySet().stream().map(entry -> {
-            //Creates a new arrayList that only contains the given year
-            ArrayList<NFLTeamStatsByYear> filteredSeasons = entry.getValue().stream()
-                    .filter(team -> team.getYear() == year)
-                    .collect(Collectors.toCollection(ArrayList::new));
-            //Returns all teams with their filtered ArrayLists of seasons
-            return Map.entry(entry.getKey(), filteredSeasons);
-        }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-                (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+    public static Predicate<Map.Entry<String, ArrayList<NFLTeamStatsByYear>>> filterByYear(Integer year) {
+        return filt -> year == null || filt.getValue().stream().anyMatch(stats -> stats.getYear() == year);
     }
 
     //Filter by Team Method (Will only add teams chosen)
-    public static HashMap<String, ArrayList<NFLTeamStatsByYear>> filterByTeam(HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData, String teamName) {
+    public static Predicate<Map.Entry<String, ArrayList<NFLTeamStatsByYear>>> filterByTeam(String teamName) {
         //As the name of the team is the key of the hashmap, it is much simpler than year
-        return NFLData.entrySet().stream().filter(entry -> entry.getKey().equals(teamName))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-                        (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+        return filt -> teamName.equals("All Teams") || filt.getKey().equals(teamName);
     }
 
     //Filter by Wins Method (User Inputs Min Wins to be added)
-    public static HashMap<String, ArrayList<NFLTeamStatsByYear>> filterByWins (HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData, int minWins) {
-        return NFLData.entrySet().stream().map(entry -> {
-            //Creates a new arrayList that only contains the given year
-            ArrayList<NFLTeamStatsByYear> filteredSeasons = (ArrayList<NFLTeamStatsByYear>) entry.getValue().stream()
-                    .filter(team -> team.getWins() >= minWins).toList();
-            //Returns all teams with their filtered ArrayLists of seasons
-            return Map.entry(entry.getKey(), filteredSeasons);
-        }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-                (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+    public static Predicate<Map.Entry<String, ArrayList<NFLTeamStatsByYear>>> filterByWins (Integer minWins) {
+        return filt -> filt.getValue().stream().anyMatch(stats -> stats.getWins() >= minWins);
     }
 
     //Filter by Losses Method (User inputs min Losses to be added)
-    public static HashMap<String, ArrayList<NFLTeamStatsByYear>> filterByLosses (HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData, int minLosses) {
-        return NFLData.entrySet().stream().map(entry -> {
-            //Creates a new arrayList that only contains the given year
-            ArrayList<NFLTeamStatsByYear> filteredSeasons = (ArrayList<NFLTeamStatsByYear>) entry.getValue().stream()
-                    .filter(team -> team.getLosses() >= minLosses).toList();
-            //Returns all teams with their filtered ArrayLists of seasons
-            return Map.entry(entry.getKey(), filteredSeasons);
-        }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-                (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+    public static Predicate<Map.Entry<String, ArrayList<NFLTeamStatsByYear>>> filterByLosses (Integer minLosses) {
+        return filt -> filt.getValue().stream().anyMatch(stats -> stats.getLosses() >= minLosses);
     }
 
     //Sorters (Name and Year (plus Reversed))

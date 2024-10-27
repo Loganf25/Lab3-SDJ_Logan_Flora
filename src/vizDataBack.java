@@ -14,7 +14,7 @@ import org.apache.commons.csv.CSVRecord;
 
 //The Data Collection side of the Program
 public class vizDataBack {
-    //This method is the CVSFile Reader responsible for populating the HashMap
+    //This method is the CVSFile Reader responsible for populating the
     //HashMap used as many years of data has been collected
     //HashMap stores the name of the team as a key, and an ArrayList as the value
     //The arrayList will hold NFLTeamStatsByYear Objects for each season of the 20 season for a given team
@@ -23,7 +23,7 @@ public class vizDataBack {
         HashMap<String, ArrayList<NFLTeamStatsByYear>> teamsData = new HashMap<>();
 
         try(FileReader reader = new FileReader(fileName);
-            CSVParser csvParser = new CSVParser(reader,  CSVFormat.Builder.create().setHeader().build());){
+            CSVParser csvParser = new CSVParser(reader,  CSVFormat.Builder.create().setHeader().build())){
 
             //Csv Record is the entire file
             for (CSVRecord csvRecord : csvParser)
@@ -99,7 +99,7 @@ public class vizDataBack {
     //Filter by Team Method (Will only add teams chosen)
     public static Predicate<Map.Entry<String, ArrayList<NFLTeamStatsByYear>>> filterByTeam(String teamName) {
         //As the name of the team is the key of the hashmap, it is much simpler than year
-        return filt -> teamName.equals("All Teams") || filt.getKey().equals(teamName);
+        return team -> teamName.equals("All Teams") || team.getKey().equals(teamName);
     }
 
     //Filter by Wins Method (User Inputs Min Wins to be added)

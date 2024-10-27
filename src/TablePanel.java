@@ -9,7 +9,7 @@ import static src.vizDataBack.*;
 
 public class TablePanel extends JPanel{
     //Data taken from csv file
-    private HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData;
+    private final HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData;
    //Panels to be affected
     private final DetailsPanel detailsPanel;
     private final StatsPanel statsPanel;
@@ -45,7 +45,7 @@ public class TablePanel extends JPanel{
         sortDropDown = new JComboBox<>(SORT_OPTIONS);
         sortDropDown.insertItemAt(null, 0);
         sortDropDown.setSelectedIndex(0);
-        sortDropDown.addActionListener(e -> {updateDisplay();});
+        sortDropDown.addActionListener(e -> updateDisplay());
         controlPanel.add(sortDropDown);
 
         //Drop Down for picking a Team
@@ -140,18 +140,9 @@ public class TablePanel extends JPanel{
         //Now that the Data is Filtered to User Specification
 
         //Check each team, and its attributes, on possible filters applied to it
-        HashMap<String, ArrayList<NFLTeamStatsByYear>> filteredData = new HashMap<>();
+        HashMap<String, ArrayList<NFLTeamStatsByYear>> filteredData = filter(NFLData);
+
         //Looks into sorted data and only puts non-filtered items into the new data map
-        filteredData = filter(NFLData);
-
-        System.out.println("After filter logic in updateDisplay");
-        for(Map.Entry<String, ArrayList<NFLTeamStatsByYear>> team : filteredData.entrySet()){
-            System.out.println(team.getKey() + " " );
-            for (NFLTeamStatsByYear stats : team.getValue()) {
-                System.out.print(stats.getYear() + " ");
-            }
-        }
-
         //It's time to put the data on the panel in any sorted manner
         //If not sorted, I scrambled the Data so its better looking on the table
         HashMap<String, ArrayList<NFLTeamStatsByYear>> sortedData = new HashMap<>();
@@ -176,6 +167,7 @@ public class TablePanel extends JPanel{
 
         revalidate();
         repaint();
+        statsPanel.populate(sortedData);
     }
 
     //Displays Data in its Sorted Way (Which is already sorted in Hash)
@@ -280,3 +272,4 @@ public class TablePanel extends JPanel{
         displayPanel.add(teamYearPanel);
     }
 }
+

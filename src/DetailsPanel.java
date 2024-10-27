@@ -10,20 +10,28 @@ public class DetailsPanel extends JPanel{
     public DetailsPanel(){
         setPreferredSize(new Dimension(500,500));
         setBackground(CobaltBlue);
+        setLayout(new BorderLayout());
+
+        //Creates a Label for When Empty
+        JLabel emptyMesg = new JLabel("Click \"Details\" for Team's Season Stats");
+        emptyMesg.setForeground(Color.LIGHT_GRAY);
+        emptyMesg.setFont(new Font("Time New Roman", Font.PLAIN, 15));
+        emptyMesg.setHorizontalAlignment(JLabel.CENTER);
+        add(emptyMesg, BorderLayout.CENTER);
     }
 
     public void updateDetails(NFLTeamStatsByYear stats){
         this.removeAll();
         //Set up in a series of layouts and panels for a neat visual
         //Layout for Details Panel is North/South
-        setLayout(new BorderLayout());
 
         //Contains Opener Panel (Major Stats) and Bulk Panel (Rest of Stats)
         //Layout for Opener Panel is North/South
         JPanel opener = new JPanel();
         opener.setLayout(new BorderLayout());
 
-        //Contains Title (Team n Year) and Big Stat (Wins/Losses)
+        //Contains Title (Team n Year)
+        // and Big Stat (Wins/Losses)
         //Title Panel
         JPanel title = new JPanel();
         title.setLayout(new BorderLayout());

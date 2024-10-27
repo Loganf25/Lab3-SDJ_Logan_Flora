@@ -91,9 +91,9 @@ public class vizDataBack {
 
 
     //Filterers (Utilized Streams Here)
-    //Filter by Year Method (Will only add years chosen)
-    public static Predicate<Map.Entry<String, ArrayList<NFLTeamStatsByYear>>> filterByYear(Integer year) {
-        return filt -> year == null || filt.getValue().stream().anyMatch(stats -> stats.getYear() == year);
+    //Filter by Year Method (Will only add year chosen)
+    public static Predicate<NFLTeamStatsByYear> filterByYear(Integer year) {
+        return seasonStats -> year == null || Objects.equals(seasonStats.getYear(), year);
     }
 
     //Filter by Team Method (Will only add teams chosen)
@@ -103,13 +103,13 @@ public class vizDataBack {
     }
 
     //Filter by Wins Method (User Inputs Min Wins to be added)
-    public static Predicate<Map.Entry<String, ArrayList<NFLTeamStatsByYear>>> filterByWins (Integer minWins) {
-        return filt -> filt.getValue().stream().anyMatch(stats -> stats.getWins() >= minWins);
+    public static Predicate<NFLTeamStatsByYear> filterByWins (Integer minWins) {
+        return seasonStats -> seasonStats.getWins() >= minWins;
     }
 
     //Filter by Losses Method (User inputs min Losses to be added)
-    public static Predicate<Map.Entry<String, ArrayList<NFLTeamStatsByYear>>> filterByLosses (Integer minLosses) {
-        return filt -> filt.getValue().stream().anyMatch(stats -> stats.getLosses() >= minLosses);
+    public static Predicate<NFLTeamStatsByYear> filterByLosses (Integer minLosses) {
+        return seasonStats -> seasonStats.getLosses() >= minLosses;
     }
 
     //Sorters (Name and Year (plus Reversed))

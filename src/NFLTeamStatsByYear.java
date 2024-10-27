@@ -3,7 +3,7 @@ package src;
 public class   NFLTeamStatsByYear {
     //Details for DetailsPanel
     private final String teamName;
-    private final int year;
+    private final Integer year;
     //Actual Data of Team
     //Game Stats (Calculate Win %)
     private final int wins;
@@ -49,7 +49,7 @@ public class   NFLTeamStatsByYear {
     String getTeamName() {
         return teamName;
     }
-    int getYear() {
+    Integer getYear() {
         return year;
     }
     int getWins() {

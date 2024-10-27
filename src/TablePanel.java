@@ -96,7 +96,7 @@ public class TablePanel extends JPanel{
     }
 
 
-    private boolean isFiltered(Map.Entry<String, ArrayList<NFLTeamStatsByYear>> team){
+    private HashMap<String, ArrayList<NFLTeamStatsByYear>> filter(HashMap<String, ArrayList<NFLTeamStatsByYear>> toFilterData){
         String selectedTeam = (String) teamFilter.getSelectedItem();
         Integer selectedYear = (Integer) yearFilter.getSelectedItem();
         int minWins = 0;
@@ -109,10 +109,29 @@ public class TablePanel extends JPanel{
             minLosses = Integer.parseInt(lossesFilter.getText());
         } catch (NumberFormatException ignored) {}
 
-        return !vizDataBack.filterByTeam(selectedTeam).test(team) ||
-                !vizDataBack.filterByYear(selectedYear).test(team) ||
-                !vizDataBack.filterByWins(minWins).test(team) ||
-                !vizDataBack.filterByLosses(minLosses).test(team);
+        //New Map Only containing filtered content
+        HashMap<String, ArrayList<NFLTeamStatsByYear>> filteredData = new HashMap<>();
+        //Iterates Through Key (Teams)
+        for(HashMap.Entry<String, ArrayList<NFLTeamStatsByYear>> team : toFilterData.entrySet()){
+            //Stores Filtered Stats in Value (ArrayList) (Stats)
+            ArrayList<NFLTeamStatsByYear> filteredStats = new ArrayList<>();
+            //Iterates through all seasons Stats Object
+            for(NFLTeamStatsByYear teamStats : team.getValue()){
+                //Needs to pass all filters in order to get placed into new array
+                if (filterByYear(selectedYear).test(teamStats)) {
+                    if(filterByWins(minWins).test(teamStats)) {
+                        if(filterByLosses(minLosses).test(teamStats)) {
+                            filteredStats.add(teamStats);
+                        }
+                    }
+                }
+            }
+            //If that team is alo filtered in, that team, and the new Array list
+            //Are added to new Hashmap
+            if (filterByTeam(selectedTeam).test(team))
+                filteredData.put(team.getKey(), filteredStats);
+        }
+        return filteredData;
     }
 
     private void updateDisplay() {
@@ -123,17 +142,21 @@ public class TablePanel extends JPanel{
         //Check each team, and its attributes, on possible filters applied to it
         HashMap<String, ArrayList<NFLTeamStatsByYear>> filteredData = new HashMap<>();
         //Looks into sorted data and only puts non-filtered items into the new data map
-        for(Map.Entry<String, ArrayList<NFLTeamStatsByYear>> team : NFLData.entrySet()){
-            if (!isFiltered(team))
-                filteredData.put(team.getKey(), team.getValue());
+        filteredData = filter(NFLData);
+
+        System.out.println("After filter logic in updateDisplay");
+        for(Map.Entry<String, ArrayList<NFLTeamStatsByYear>> team : filteredData.entrySet()){
+            System.out.println(team.getKey() + " " );
+            for (NFLTeamStatsByYear stats : team.getValue()) {
+                System.out.print(stats.getYear() + " ");
+            }
         }
-
-
-
 
         //It's time to put the data on the panel in any sorted manner
         //If not sorted, I scrambled the Data so its better looking on the table
-        HashMap<String, ArrayList<NFLTeamStatsByYear>> sortedData = new HashMap<>(filteredData);
+        HashMap<String, ArrayList<NFLTeamStatsByYear>> sortedData = new HashMap<>();
+        for (Map.Entry<String, ArrayList<NFLTeamStatsByYear>> entry : filteredData.entrySet())
+            sortedData.put(entry.getKey(), new ArrayList<>(entry.getValue()));
         String selectedSort = (String) sortDropDown.getSelectedItem();
         if (selectedSort != null){
             switch (selectedSort){
@@ -143,17 +166,6 @@ public class TablePanel extends JPanel{
                 case "Year (2023-2003)" -> sortedData = sortByYearDec(sortedData);
             }
         }
-
-        if(selectedSort == null) {
-            System.out.println("After Sort Code in updateDisplay (Before Filter Applied - Using sortedData Hash)");
-        }
-        else{
-            System.out.println("After Sort Code in updateDisplay (After Filter Applied - Using sortedData Hash)");
-        }
-        for(HashMap.Entry<String, ArrayList<NFLTeamStatsByYear>> team : sortedData.entrySet()){
-            System.out.println(team.getKey());
-        }
-        System.out.println(" ");
 
         //Non filtered teams/seasons are passed to correct method of displaying
         //Since data can be sorted/filtered or Random, it needs to be checked
@@ -171,16 +183,6 @@ public class TablePanel extends JPanel{
         //This Only works for filtered to a team, not a year
         String selectedSort = (String) sortDropDown.getSelectedItem();
 
-        if(selectedSort == null) {
-            System.out.println("Beginning of displayInOrder Function (Before Filter Applied - Using filteredData Parameter Hash) ");
-        }
-        else{
-            System.out.println("Beginning of displayInOrder Function (After Filter Applied - Using filteredData Parameter Hash)");
-        }
-        for(HashMap.Entry<String, ArrayList<NFLTeamStatsByYear>> team : filteredData.entrySet()){
-            System.out.println(team.getKey());
-        }
-        System.out.println(" ");
         //Year-Based Sorting (Needs to look into ArrayList before teams for each team)
         //Which contradicts itself but possible
         if (selectedSort != null && (selectedSort.equals(SORT_OPTIONS[2]) || selectedSort.equals(SORT_OPTIONS[3]))) {
@@ -215,17 +217,6 @@ public class TablePanel extends JPanel{
             }
             //Team Sort
         } else {
-            if(selectedSort == null) {
-                System.out.println("Beginning of Else statement in displayInOrder Method (Before Filter Applied - using filteredData Parameter Hash) ");
-            }
-            else{
-                System.out.println("Beginning of Else statement in displayInOrder Method (After Filter Applied - using filteredData Parameter Hash)");
-            }
-            for(HashMap.Entry<String, ArrayList<NFLTeamStatsByYear>> team : filteredData.entrySet()){
-                System.out.println(team.getKey());
-            }
-            System.out.println(" ");
-
             for (Map.Entry<String, ArrayList<NFLTeamStatsByYear>> team : filteredData.entrySet()) {
                 addTeamYearPanel(team.getKey(), team.getValue().getFirst());
             }

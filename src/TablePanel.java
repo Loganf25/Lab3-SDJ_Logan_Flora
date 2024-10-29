@@ -22,6 +22,8 @@ public class TablePanel extends JPanel{
     private final JComboBox<Integer> yearFilter;
     private final JTextField winsFilter;
     private final JTextField lossesFilter;
+    private final String[] CHART_OPTIONS = {"Wins", "Yards", "Touchdowns"};
+    private final JComboBox<String> chartType;
 
     //Constructor
     public TablePanel(DetailsPanel detailsPanel, StatsPanel statsPanel, ChartPanel chartPanel){
@@ -36,7 +38,7 @@ public class TablePanel extends JPanel{
 
         //Control Panel to hold filters and sorts
         JPanel controlPanel = new JPanel();
-        controlPanel.setPreferredSize(new Dimension(500, 50));
+        controlPanel.setPreferredSize(new Dimension(500, 60));
         Color brillBlue = new Color(62, 95, 138);
         controlPanel.setBackground(brillBlue);
 
@@ -75,6 +77,11 @@ public class TablePanel extends JPanel{
         lossesFilter.addActionListener(e -> updateDisplay());
         controlPanel.add(new JLabel("Minimum Losses: "));
         controlPanel.add(lossesFilter);
+
+        //JComboBox for Chart Stat
+        chartType = new JComboBox<>(CHART_OPTIONS);
+        chartType.addActionListener(e -> updateDisplay());
+        controlPanel.add(chartType);
 
         //Display Panel (Actual List)
         displayPanel = new JPanel();
@@ -137,6 +144,7 @@ public class TablePanel extends JPanel{
     private void updateDisplay() {
         //Reset entire Panel
         displayPanel.removeAll();
+        String selectedChart = (String) chartType.getSelectedItem();
         //Now that the Data is Filtered to User Specification
 
         //Check each team, and its attributes, on possible filters applied to it
@@ -168,6 +176,10 @@ public class TablePanel extends JPanel{
         revalidate();
         repaint();
         statsPanel.populate(sortedData);
+        chartPanel.setMap(sortedData);
+        //Flag to determine pie/bar graph displayed
+        boolean oneYearFlag = yearFilter.getSelectedItem() != null;
+        chartPanel.updateChart(selectedChart, oneYearFlag);
     }
 
     //Displays Data in its Sorted Way (Which is already sorted in Hash)

@@ -8,7 +8,7 @@ public class DetailsPanel extends JPanel{
 
 
     public DetailsPanel(){
-        setPreferredSize(new Dimension(500,500));
+        setPreferredSize(new Dimension(700,250));
         setBackground(CobaltBlue);
         setLayout(new BorderLayout());
 

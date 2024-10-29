@@ -8,7 +8,7 @@ public class NFLStatsViz {
     public static void main(String[] args){
         JFrame frame = new JFrame("NFL Stats Visualized (2003-)");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setPreferredSize(new Dimension(1000, 1000));
+        frame.setPreferredSize(new Dimension(1200, 800));
         frame.setBackground(Color.MAGENTA);
 
         //Initialize all Panels before adding to this Panel
@@ -21,7 +21,7 @@ public class NFLStatsViz {
         //Created a Left and Right Panel (I wanted different vert. lengths)
         //Left Holds Table and Stats Panels
         JPanel leftPanel = new JPanel();
-        leftPanel.setPreferredSize(new Dimension(500, 1000));
+        leftPanel.setPreferredSize(new Dimension(500, 800));
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
         leftPanel.add(Box.createVerticalGlue());
         tablePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -32,7 +32,7 @@ public class NFLStatsViz {
 
         //Right Holds Chart and Details Panels
         JPanel rightPanel = new JPanel();
-        rightPanel.setPreferredSize(new Dimension(500, 1000));
+        rightPanel.setPreferredSize(new Dimension(700, 800));
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         chartPanel.setAlignmentX(Component.RIGHT_ALIGNMENT);
         detailsPanel.setAlignmentX(Component.RIGHT_ALIGNMENT);

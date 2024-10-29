@@ -11,7 +11,7 @@ import static src.vizDataBack.*;
 public class StatsPanel extends JPanel{
 
     public StatsPanel(){
-        setPreferredSize(new Dimension(500,400));
+        setPreferredSize(new Dimension(500,350));
         Color blackGrn = new Color(52, 62,64);
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         setBackground(blackGrn);

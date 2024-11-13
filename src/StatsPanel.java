@@ -8,13 +8,18 @@ import java.util.HashMap;
 import static src.vizDataBack.*;
 
 
-public class StatsPanel extends JPanel{
+public class StatsPanel extends JPanel implements DataObserver{
 
     public StatsPanel(){
         setPreferredSize(new Dimension(500,350));
         Color blackGrn = new Color(52, 62,64);
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         setBackground(blackGrn);
+    }
+
+    @Override
+    public void update(HashMap<String, ArrayList<NFLTeamStatsByYear>> data, String noWorry, NFLTeamStatsByYear noWorry2) {
+        populate(data);
     }
 
     public void populate(HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData){

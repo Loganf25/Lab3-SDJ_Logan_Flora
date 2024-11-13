@@ -16,7 +16,11 @@ public class NFLStatsViz {
         DetailsPanel detailsPanel = new DetailsPanel();
         StatsPanel statsPanel = new StatsPanel();
         ChartPanel chartPanel = new ChartPanel();
-        TablePanel tablePanel = new TablePanel(detailsPanel, statsPanel, chartPanel);
+        TablePanel tablePanel = new TablePanel();
+        tablePanel.addPanelObs(detailsPanel);
+        tablePanel.addPanelObs(statsPanel);
+        tablePanel.addPanelObs(chartPanel);
+        tablePanel.notifyObservers();
 
         //Created a Left and Right Panel (I wanted different vert. lengths)
         //Left Holds Table and Stats Panels
@@ -48,5 +52,5 @@ public class NFLStatsViz {
         frame.pack();
         frame.setVisible(true);
     }
-
 }
+

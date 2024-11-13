@@ -7,20 +7,15 @@ import java.io.File;
 import java.util.*;
 import org.jfree.chart.*;
 
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.ValueAxis;
+
 import org.jfree.chart.plot.*;
-import org.jfree.chart.renderer.category.BarRenderer;
-import org.jfree.chart.renderer.category.CategoryItemRenderer;
-import org.jfree.chart.renderer.xy.XYBarRenderer;
-import org.jfree.chart.renderer.xy.XYItemRendererState;
+
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.category.DefaultCategoryDataset;
+
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.xy.*;
 
-public class ChartPanel extends JPanel {
+public class ChartPanel extends JPanel implements DataObserver{
 
     private final HashMap<String, ImageIcon> teamLogos = loadTeamLogos();
     private HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData;
@@ -32,6 +27,13 @@ public class ChartPanel extends JPanel {
         setBackground(PearlRubyRed);
 
         NFLData = new HashMap<>();
+    }
+
+    @Override
+    public void update(HashMap<String, ArrayList<NFLTeamStatsByYear>> data, String chartType, NFLTeamStatsByYear noWorry){
+        setMap(data);
+        boolean oneYearFlag = data.values().iterator().next().size() == 1;
+        updateChart(chartType, oneYearFlag);
     }
 
     public void setMap(HashMap<String, ArrayList<NFLTeamStatsByYear>> data) {

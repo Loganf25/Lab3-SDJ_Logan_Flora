@@ -2,8 +2,9 @@ package src;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.*;
 
-public class DetailsPanel extends JPanel{
+public class DetailsPanel extends JPanel implements DataObserver{
     private final Color CobaltBlue = new Color(37, 41, 74);
 
 
@@ -18,6 +19,13 @@ public class DetailsPanel extends JPanel{
         emptyMesg.setFont(new Font("Time New Roman", Font.PLAIN, 15));
         emptyMesg.setHorizontalAlignment(JLabel.CENTER);
         add(emptyMesg, BorderLayout.CENTER);
+    }
+
+    @Override
+    public void update(HashMap<String, ArrayList<NFLTeamStatsByYear>> data, String noWorry, NFLTeamStatsByYear selectedStats){
+        if (selectedStats != null)
+            updateDetails(selectedStats);
+
     }
 
     public void updateDetails(NFLTeamStatsByYear stats){

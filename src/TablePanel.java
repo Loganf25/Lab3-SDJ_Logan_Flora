@@ -2,6 +2,8 @@ package src;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -10,10 +12,11 @@ import static src.vizDataBack.*;
 public class TablePanel extends JPanel{
     //Data taken from csv file
     private final HashMap<String, ArrayList<NFLTeamStatsByYear>> NFLData;
-   //Panels to be affected
-    private final DetailsPanel detailsPanel;
-    private final StatsPanel statsPanel;
-    private final ChartPanel chartPanel;
+    private HashMap<String, ArrayList<NFLTeamStatsByYear>> sortedData;
+
+    //Panels to be affected
+    private final ArrayList<DataObserver> observers = new ArrayList<>();
+    private NFLTeamStatsByYear selectedStats;
     private final JPanel displayPanel;
     //Components Used
     private final JComboBox<String> sortDropDown;
@@ -26,13 +29,10 @@ public class TablePanel extends JPanel{
     private final JComboBox<String> chartType;
 
     //Constructor
-    public TablePanel(DetailsPanel detailsPanel, StatsPanel statsPanel, ChartPanel chartPanel){
-        //Panel Setters as they will be affected
-        this.detailsPanel = detailsPanel;
-        this.statsPanel = statsPanel;
-        this.chartPanel = chartPanel;
+    public TablePanel(){
         NFLData = getTeamsFromCSV("resources/NFLteam_stats_2023.csv");
         //This is needed to reset the data when reverting back from a filter
+        sortedData = new HashMap<>();
         //Too deep ;(
         setBackground(Color.BLACK);
 
@@ -102,6 +102,17 @@ public class TablePanel extends JPanel{
         add(scrollPane, BorderLayout.CENTER);
     }
 
+    //Adds Observers to list of Observers to Contact
+    public void addPanelObs(DataObserver observer){
+        observers.add(observer);
+    }
+
+    public void notifyObservers(){
+        String selectedChart = (String) chartType.getSelectedItem();
+        for(DataObserver observer : observers){
+            observer.update(sortedData, selectedChart, selectedStats);
+        }
+    }
 
     private HashMap<String, ArrayList<NFLTeamStatsByYear>> filter(HashMap<String, ArrayList<NFLTeamStatsByYear>> toFilterData){
         String selectedTeam = (String) teamFilter.getSelectedItem();
@@ -144,7 +155,6 @@ public class TablePanel extends JPanel{
     private void updateDisplay() {
         //Reset entire Panel
         displayPanel.removeAll();
-        String selectedChart = (String) chartType.getSelectedItem();
         //Now that the Data is Filtered to User Specification
 
         //Check each team, and its attributes, on possible filters applied to it
@@ -152,8 +162,8 @@ public class TablePanel extends JPanel{
 
         //Looks into sorted data and only puts non-filtered items into the new data map
         //It's time to put the data on the panel in any sorted manner
+        sortedData.clear();
         //If not sorted, I scrambled the Data so its better looking on the table
-        HashMap<String, ArrayList<NFLTeamStatsByYear>> sortedData = new HashMap<>();
         for (Map.Entry<String, ArrayList<NFLTeamStatsByYear>> entry : filteredData.entrySet())
             sortedData.put(entry.getKey(), new ArrayList<>(entry.getValue()));
         String selectedSort = (String) sortDropDown.getSelectedItem();
@@ -173,14 +183,11 @@ public class TablePanel extends JPanel{
         else
             displayInOrder(sortedData);
 
+        //Notifies the Observers of an update
         revalidate();
         repaint();
-        statsPanel.populate(sortedData);
-        chartPanel.setMap(sortedData);
-        //Flag to determine pie/bar graph displayed
-        boolean oneYearFlag = yearFilter.getSelectedItem() != null;
-        chartPanel.updateChart(selectedChart, oneYearFlag);
-    }
+        notifyObservers();
+        }
 
     //Displays Data in its Sorted Way (Which is already sorted in Hash)
     private void displayInOrder (HashMap<String, ArrayList<NFLTeamStatsByYear>> filteredData){
@@ -273,13 +280,15 @@ public class TablePanel extends JPanel{
         JLabel teamYearLabel = new JLabel(teamName + " (" + stats.getYear() + ")");
         teamYearLabel.setForeground(Color.WHITE);
         teamYearPanel.add(teamYearLabel);
-
-        //Button that pushes Team-Year Data to Details Panel
-        teamYearLabel.add(Box.createHorizontalGlue());
-        JButton detailsButton = new JButton("Details");
-        detailsButton.addActionListener(e -> detailsPanel.updateDetails(stats));
-        teamYearPanel.add(detailsButton);
         teamYearPanel.add(Box.createHorizontalGlue());
+        //Clicker that pushes Team-Year Data to Details Panel
+        teamYearPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                selectedStats = stats;
+                notifyObservers();
+            }
+        });
 
         displayPanel.add(teamYearPanel);
     }

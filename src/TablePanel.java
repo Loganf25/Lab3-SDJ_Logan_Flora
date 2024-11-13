@@ -127,28 +127,11 @@ public class TablePanel extends JPanel{
             minLosses = Integer.parseInt(lossesFilter.getText());
         } catch (NumberFormatException ignored) {}
 
-        //New Map Only containing filtered content
-        HashMap<String, ArrayList<NFLTeamStatsByYear>> filteredData = new HashMap<>();
-        //Iterates Through Key (Teams)
-        for(HashMap.Entry<String, ArrayList<NFLTeamStatsByYear>> team : toFilterData.entrySet()){
-            //Stores Filtered Stats in Value (ArrayList) (Stats)
-            ArrayList<NFLTeamStatsByYear> filteredStats = new ArrayList<>();
-            //Iterates through all seasons Stats Object
-            for(NFLTeamStatsByYear teamStats : team.getValue()){
-                //Needs to pass all filters in order to get placed into new array
-                if (filterByYear(selectedYear).test(teamStats)) {
-                    if(filterByWins(minWins).test(teamStats)) {
-                        if(filterByLosses(minLosses).test(teamStats)) {
-                            filteredStats.add(teamStats);
-                        }
-                    }
-                }
-            }
-            //If that team is alo filtered in, that team, and the new Array list
-            //Are added to new Hashmap
-            if (filterByTeam(selectedTeam).test(team))
-                filteredData.put(team.getKey(), filteredStats);
-        }
+        HashMap<String, ArrayList<NFLTeamStatsByYear>> filteredData = toFilterData;
+        filteredData = new NFLFilters.TeamFilter(selectedTeam).filter(filteredData);
+        filteredData = new NFLFilters.YearFilter(selectedYear).filter(filteredData);
+        filteredData = new NFLFilters.WinsFilter(minWins).filter(filteredData);
+        filteredData = new NFLFilters.LossesFilter(minLosses).filter(filteredData);
         return filteredData;
     }
 

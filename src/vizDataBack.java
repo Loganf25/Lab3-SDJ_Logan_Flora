@@ -89,29 +89,6 @@ public class vizDataBack {
         return stats.getAverage();
     }
 
-
-    //Filterers (Utilized Streams Here)
-    //Filter by Year Method (Will only add year chosen)
-    public static Predicate<NFLTeamStatsByYear> filterByYear(Integer year) {
-        return seasonStats -> year == null || Objects.equals(seasonStats.getYear(), year);
-    }
-
-    //Filter by Team Method (Will only add teams chosen)
-    public static Predicate<Map.Entry<String, ArrayList<NFLTeamStatsByYear>>> filterByTeam(String teamName) {
-        //As the name of the team is the key of the hashmap, it is much simpler than year
-        return team -> teamName.equals("All Teams") || team.getKey().equals(teamName);
-    }
-
-    //Filter by Wins Method (User Inputs Min Wins to be added)
-    public static Predicate<NFLTeamStatsByYear> filterByWins (Integer minWins) {
-        return seasonStats -> seasonStats.getWins() >= minWins;
-    }
-
-    //Filter by Losses Method (User inputs min Losses to be added)
-    public static Predicate<NFLTeamStatsByYear> filterByLosses (Integer minLosses) {
-        return seasonStats -> seasonStats.getLosses() >= minLosses;
-    }
-
     //Sorters (Name and Year (plus Reversed))
     //A-Z
     //Returns a newly sorted Hashmap

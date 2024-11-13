@@ -25,9 +25,7 @@
    In order to do this, I created a new interface that holds a method to be override by the observers and the 
    subject, table panel, has a list of these that notifies them to call that method when notified. 
 2. Template Method Pattern
-    My filtering code took up more space then needed, this allows for all filtering in one interface
-    and easy calls for the table panel, rather than that holding all the logic
-   I did this by creating an interface that holds the new filter classes, which
-   override the one method to filter.
-   This way, i can just filter my each rather than one after another, still allowing for more
-   than one filter at once. 
+    I wanted my filter logic to be outside my panel like I have seen others do it in their projects.
+    It makes total sense to separate these jobs, so to do so I used this pattern.
+    I created a new abstract class that filters based on a filter, and a filter class for each of the possible filters
+    This consolidates the code, in the backend file and the panel class, for filters to one place for easier changes in teh future. 

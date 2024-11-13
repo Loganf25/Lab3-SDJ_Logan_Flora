@@ -2,19 +2,32 @@
 
 ##############################   Apache Import Issue Fix   #############################################
 
-# This Program utilizes a csv reading and parsing class from the apache commons website
-# Same website recommended by the prof. for stats
-# I have added this class as a dependency of the project, and through a lib folder, so you shouldn't have to do anything
-# But, if the imports do not work as intended, follow these steps:
-#     1. Click the 'File' button in ItelliJ 
-#     2. Navigate to the 'Project Stucture' button and click it
-#     3. From in here, MY project should be selected on the left side, if not, select it
-#     4. Off to the right of that is a tab named 'Dependencies,' click on it
-#     5. Below that is an '+' button, which after clicked will bring up a menu
-#     6. Click the option that says 'JAR and Directories'
-#     7. From this file explorer window, navigate to the lib folder, in project root folder, and click once
-#     8. Click 'OK' to add folder as a dependencies and 'OK' again to close the Stucture window
-# This should resolve those imports issues
-# If not, ask lflora@cub.uca.edu. Although this is what fixed mine, so idk how much help I'd be beyond this.
+ This Program utilizes a csv reading and parsing class from the apache commons website
+ Same website recommended by the prof. for stats
+ I have added this class as a dependency of the project, and through a lib folder, so you shouldn't have to do anything
+ But, if the imports do not work as intended, follow these steps:
+     1. Click the 'File' button in ItelliJ 
+     2. Navigate to the 'Project Stucture' button and click it
+     3. From in here, MY project should be selected on the left side, if not, select it
+     4. Off to the right of that is a tab named 'Dependencies,' click on it
+     5. Below that is an '+' button, which after clicked will bring up a menu
+     6. Click the option that says 'JAR and Directories'
+     7. From this file explorer window, navigate to the lib folder, in project root folder, and click once
+     8. Click 'OK' to add folder as a dependencies and 'OK' again to close the Stucture window
+ This should resolve those imports issues
+ If not, ask lflora@cub.uca.edu. Although this is what fixed mine, so idk how much help I'd be beyond this.
 
 #########################################################################################################
+
+1. Observer Pattern
+   I wanted to implement this as table pattern should act as a sibling of the other panels, not the parent which controls
+    So implementing them as observers is a better relationship to have between them
+   In order to do this, I created a new interface that holds a method to be override by the observers and the 
+   subject, table panel, has a list of these that notifies them to call that method when notified. 
+2. Template Method Pattern
+    My filtering code took up more space then needed, this allows for all filtering in one interface
+    and easy calls for the table panel, rather than that holding all the logic
+   I did this by creating an interface that holds the new filter classes, which
+   override the one method to filter.
+   This way, i can just filter my each rather than one after another, still allowing for more
+   than one filter at once. 
